@@ -23,7 +23,7 @@ public class JobApplicationsControllerTests
         var result = Assert.IsType<CreatedAtActionResult>(created.Result);
         var entity = Assert.IsType<JobApplication>(result.Value);
         Assert.Equal(1, entity.Id);
-        var list = await controller.GetAll(null, null, 1, 25, CancellationToken.None);
+        var list = await controller.GetAll(null, null, null, null, 1, 25, CancellationToken.None);
         Assert.Single(Assert.IsType<OkObjectResult>(list.Result).Value as IEnumerable<JobApplication> ?? []);
     }
 

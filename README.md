@@ -11,6 +11,7 @@ JobTracker is a focused ASP.NET Core 10 Web API for keeping a local record of jo
 - Swagger UI and OpenAPI documentation available in development
 - Filtering by status/company with page-size limits
 - Follow-up and interview dates, location, work arrangement, salary, and contact tracking
+- List/Kanban-style views, sorting, and due/overdue follow-up filters
 
 ## Run locally
 

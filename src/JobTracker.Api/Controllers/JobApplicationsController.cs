@@ -15,6 +15,8 @@ public class JobApplicationsController(JobTrackerDbContext db) : ControllerBase
     public async Task<ActionResult<IEnumerable<JobApplication>>> GetAll(
         [FromQuery] string? status,
         [FromQuery] string? company,
+        [FromQuery] string? sortBy,
+        [FromQuery] string? followUp,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 25,
         CancellationToken cancellationToken = default)
@@ -27,10 +29,20 @@ public class JobApplicationsController(JobTrackerDbContext db) : ControllerBase
             query = query.Where(x => x.Status == status);
         if (!string.IsNullOrWhiteSpace(company))
             query = query.Where(x => x.Company.Contains(company));
+        if (followUp?.Equals("due", StringComparison.OrdinalIgnoreCase) == true)
+            query = query.Where(x => x.NextActionDate != null && x.NextActionDate <= DateOnly.FromDateTime(DateTime.UtcNow) && x.Status != "Rejected" && x.Status != "Withdrawn" && x.Status != "Offer");
+        if (followUp?.Equals("overdue", StringComparison.OrdinalIgnoreCase) == true)
+            query = query.Where(x => x.NextActionDate != null && x.NextActionDate < DateOnly.FromDateTime(DateTime.UtcNow) && x.Status != "Rejected" && x.Status != "Withdrawn" && x.Status != "Offer");
+
+        query = sortBy?.ToLowerInvariant() switch
+        {
+            "company" => query.OrderBy(x => x.Company).ThenByDescending(x => x.ApplicationDate),
+            "status" => query.OrderBy(x => x.Status).ThenBy(x => x.Company),
+            "followup" => query.OrderBy(x => x.NextActionDate == null).ThenBy(x => x.NextActionDate).ThenBy(x => x.Company),
+            _ => query.OrderByDescending(x => x.ApplicationDate).ThenBy(x => x.Company)
+        };
 
         var applications = await query
-            .OrderByDescending(x => x.ApplicationDate)
-            .ThenBy(x => x.Company)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
