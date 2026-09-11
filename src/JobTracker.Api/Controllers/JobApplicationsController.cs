@@ -72,6 +72,13 @@ public class JobApplicationsController(JobTrackerDbContext db) : ControllerBase
         application.ApplicationDate = request.ApplicationDate!.Value;
         application.JobUrl = request.JobUrl;
         application.Notes = request.Notes;
+        application.Location = request.Location;
+        application.WorkArrangement = request.WorkArrangement;
+        application.SalaryRange = request.SalaryRange;
+        application.ContactName = request.ContactName;
+        application.InterviewDate = request.InterviewDate;
+        application.NextActionDate = request.NextActionDate;
+        application.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(cancellationToken);
         return Ok(application);
     }
@@ -89,7 +96,10 @@ public class JobApplicationsController(JobTrackerDbContext db) : ControllerBase
     private static JobApplication ToEntity(JobApplicationRequest request) => new()
     {
         Company = request.Company.Trim(), JobTitle = request.JobTitle.Trim(), Status = NormalizeStatus(request.Status),
-        ApplicationDate = request.ApplicationDate!.Value, JobUrl = request.JobUrl, Notes = request.Notes
+        ApplicationDate = request.ApplicationDate!.Value, JobUrl = request.JobUrl, Notes = request.Notes,
+        Location = request.Location, WorkArrangement = request.WorkArrangement, SalaryRange = request.SalaryRange,
+        ContactName = request.ContactName, InterviewDate = request.InterviewDate, NextActionDate = request.NextActionDate,
+        CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow
     };
 
     private static string NormalizeStatus(string status) => ValidStatuses.First(x => x.Equals(status, StringComparison.OrdinalIgnoreCase));

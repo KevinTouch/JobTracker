@@ -10,6 +10,7 @@ JobTracker is a focused ASP.NET Core 10 Web API for keeping a local record of jo
 - SQLite persistence with an initial EF Core migration
 - Swagger UI and OpenAPI documentation available in development
 - Filtering by status/company with page-size limits
+- Follow-up and interview dates, location, work arrangement, salary, and contact tracking
 
 ## Run locally
 
@@ -51,6 +52,8 @@ Available endpoints:
 | DELETE | `/api/JobApplications/{id}` | Delete an application |
 
 List requests support optional `status`, `company`, `page`, and `pageSize` query parameters. For example: `/api/JobApplications?status=Interview&page=1&pageSize=10`.
+
+Applications can also track `location`, `workArrangement`, `salaryRange`, `contactName`, `interviewDate`, and `nextActionDate`. Follow-ups on or before today appear in the dashboard's due counter.
 
 ## Test
 

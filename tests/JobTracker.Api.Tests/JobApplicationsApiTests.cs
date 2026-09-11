@@ -14,7 +14,9 @@ public class JobApplicationsApiTests(ApiFactory factory) : IClassFixture<ApiFact
         var request = new JobApplicationRequest
         {
             Company = "Acme", JobTitle = "Engineer", Status = "Applied",
-            ApplicationDate = new DateOnly(2026, 9, 11)
+            ApplicationDate = new DateOnly(2026, 9, 11), Location = "Irvine, CA",
+            WorkArrangement = "Hybrid", SalaryRange = "$120k-$150k", ContactName = "Alex Johnson",
+            InterviewDate = new DateOnly(2026, 9, 18), NextActionDate = new DateOnly(2026, 9, 15)
         };
 
         var create = await client.PostAsJsonAsync("/api/JobApplications", request);
@@ -24,6 +26,9 @@ public class JobApplicationsApiTests(ApiFactory factory) : IClassFixture<ApiFact
 
         var get = await client.GetAsync($"/api/JobApplications/{created!.Id}");
         Assert.Equal(HttpStatusCode.OK, get.StatusCode);
+        var loaded = await get.Content.ReadFromJsonAsync<JobApplication>();
+        Assert.Equal("Irvine, CA", loaded!.Location);
+        Assert.Equal("2026-09-15", loaded.NextActionDate!.Value.ToString("yyyy-MM-dd"));
 
         request.Status = "Interview";
         var update = await client.PutAsJsonAsync($"/api/JobApplications/{created.Id}", request);

@@ -16,7 +16,12 @@ public class JobTrackerDbContext(DbContextOptions<JobTrackerDbContext> options) 
             entity.Property(x => x.Status).HasMaxLength(50).IsRequired();
             entity.Property(x => x.JobUrl).HasMaxLength(2048);
             entity.Property(x => x.Notes).HasMaxLength(5000);
+            entity.Property(x => x.Location).HasMaxLength(200);
+            entity.Property(x => x.WorkArrangement).HasMaxLength(30);
+            entity.Property(x => x.SalaryRange).HasMaxLength(100);
+            entity.Property(x => x.ContactName).HasMaxLength(200);
             entity.HasIndex(x => x.ApplicationDate);
+            entity.HasIndex(x => x.NextActionDate);
         });
     }
 }
