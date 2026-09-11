@@ -8,7 +8,8 @@ JobTracker is a focused ASP.NET Core 10 Web API for keeping a local record of jo
 - Status validation: `Wishlist`, `Applied`, `Interview`, `Offer`, `Rejected`, or `Withdrawn`
 - Required-field and URL validation with standard `400` responses
 - SQLite persistence with an initial EF Core migration
-- OpenAPI document available in development
+- Swagger UI and OpenAPI documentation available in development
+- Filtering by status/company with page-size limits
 
 ## Run locally
 
@@ -19,7 +20,7 @@ dotnet restore JobTracker.slnx
 dotnet run --project src/JobTracker.Api
 ```
 
-The API applies pending migrations at startup and stores data in `jobtracker.db` in the API working directory. In development, open `/openapi/v1.json` to view the generated OpenAPI document.
+The API applies pending migrations at startup and stores data in `jobtracker.db` in the API working directory. In development, open `/swagger` to explore and execute requests interactively.
 
 ## API examples
 
@@ -49,10 +50,12 @@ Available endpoints:
 | PUT | `/api/JobApplications/{id}` | Replace an application |
 | DELETE | `/api/JobApplications/{id}` | Delete an application |
 
+List requests support optional `status`, `company`, `page`, and `pageSize` query parameters. For example: `/api/JobApplications?status=Interview&page=1&pageSize=10`.
+
 ## Test
 
 ```powershell
 dotnet test JobTracker.slnx
 ```
 
-The test project uses EF Core's in-memory provider for fast coverage of create/list, validation, and delete behavior.
+The test project includes controller tests and HTTP-level integration tests using an isolated EF Core in-memory database.

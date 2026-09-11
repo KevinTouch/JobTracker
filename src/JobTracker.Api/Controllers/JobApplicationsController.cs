@@ -12,8 +12,30 @@ public class JobApplicationsController(JobTrackerDbContext db) : ControllerBase
     private static readonly string[] ValidStatuses = ["Wishlist", "Applied", "Interview", "Offer", "Rejected", "Withdrawn"];
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<JobApplication>>> GetAll(CancellationToken cancellationToken) =>
-        Ok(await db.JobApplications.OrderByDescending(x => x.ApplicationDate).ThenBy(x => x.Company).ToListAsync(cancellationToken));
+    public async Task<ActionResult<IEnumerable<JobApplication>>> GetAll(
+        [FromQuery] string? status,
+        [FromQuery] string? company,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 25,
+        CancellationToken cancellationToken = default)
+    {
+        if (page < 1 || pageSize is < 1 or > 100)
+            return BadRequest("page must be at least 1 and pageSize must be between 1 and 100.");
+
+        var query = db.JobApplications.AsNoTracking().AsQueryable();
+        if (!string.IsNullOrWhiteSpace(status))
+            query = query.Where(x => x.Status == status);
+        if (!string.IsNullOrWhiteSpace(company))
+            query = query.Where(x => x.Company.Contains(company));
+
+        var applications = await query
+            .OrderByDescending(x => x.ApplicationDate)
+            .ThenBy(x => x.Company)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+        return Ok(applications);
+    }
 
     [HttpGet("{id:int}")]
     public async Task<ActionResult<JobApplication>> Get(int id, CancellationToken cancellationToken)
