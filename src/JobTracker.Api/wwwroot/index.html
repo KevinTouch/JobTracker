@@ -9,11 +9,13 @@
     * { box-sizing:border-box; }
     body { margin:0; color:var(--ink); background:var(--wash); font:15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; }
     header { background:#17212b; color:#fff; padding:34px max(24px, calc((100% - 1180px)/2)); }
+    .header-inner { max-width:1180px; margin:auto; display:flex; justify-content:space-between; gap:24px; align-items:end; }
+    .header-action { color:#17212b; background:#fff; }
     header .eyebrow { color:#9fc1ff; font-size:12px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
     header h1 { margin:4px 0 2px; font-size:30px; letter-spacing:-.03em; }
     header p { margin:0; color:#bac6d1; }
     main { max-width:1180px; margin:28px auto; padding:0 24px 48px; }
-    .layout { display:grid; grid-template-columns:340px 1fr; gap:24px; align-items:start; }
+    .layout { display:block; }
     .panel { background:var(--paper); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:22px; }
     h2 { margin:0 0 18px; font-size:18px; letter-spacing:-.02em; }
     label { display:block; margin:14px 0 6px; color:#465463; font-size:13px; font-weight:650; }
@@ -42,16 +44,36 @@
     .card-bottom a { color:var(--accent); font-size:13px; font-weight:650; }
     .empty { padding:42px 20px; color:var(--muted); text-align:center; border:1px dashed #cbd6df; border-radius:11px; }
     .error { display:none; margin-bottom:16px; padding:11px 13px; border-radius:8px; background:#fbe7e7; color:#943737; }
-    @media (max-width:800px) { .layout { grid-template-columns:1fr; } header { padding:28px 24px; } main { margin-top:18px; } }
+    .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+    .kpi { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; box-shadow:var(--shadow); }
+    .kpi-label { color:var(--muted); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
+    .kpi-value { margin-top:3px; font-size:27px; font-weight:800; letter-spacing:-.04em; }
+    .kpi-accent { color:var(--accent); }
+    .toolbar { background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px; }
+    dialog { width:min(560px, calc(100% - 32px)); border:0; border-radius:14px; padding:0; box-shadow:0 25px 80px #0b172499; }
+    dialog::backdrop { background:#17212b99; }
+    .dialog-panel { padding:24px; }
+    .dialog-heading { display:flex; justify-content:space-between; align-items:center; }
+    .close { background:transparent; color:var(--muted); font-size:22px; padding:0 4px; }
+    @media (max-width:800px) { .kpis { grid-template-columns:repeat(2,1fr); } header { padding:28px 24px; } main { margin-top:18px; } }
+    @media (max-width:500px) { .header-inner { align-items:start; flex-direction:column; } .header-action { width:100%; } .kpis { gap:8px; } .kpi { padding:13px; } }
   </style>
 </head>
 <body>
-  <header><div class="eyebrow">Personal job search</div><h1>JobTracker</h1><p>Keep every application, interview, and follow-up in one place.</p></header>
+  <header><div class="header-inner"><div><div class="eyebrow">Personal job search</div><h1>JobTracker</h1><p>Keep every application, interview, and follow-up in one place.</p></div><button id="add-button" class="header-action">+ Add application</button></div></header>
   <main>
     <div id="error" class="error" role="alert"></div>
+    <div class="kpis"><div class="kpi"><div class="kpi-label">Total applications</div><div id="total-count" class="kpi-value">—</div></div><div class="kpi"><div class="kpi-label">Active</div><div id="active-count" class="kpi-value kpi-accent">—</div></div><div class="kpi"><div class="kpi-label">Interviews</div><div id="interview-count" class="kpi-value">—</div></div><div class="kpi"><div class="kpi-label">Offers</div><div id="offer-count" class="kpi-value">—</div></div></div>
     <div class="layout">
-      <section class="panel">
-        <h2 id="form-title">Add an application</h2>
+      <section>
+        <div class="toolbar"><input id="company-filter" placeholder="Search by company..."><select id="status-filter"><option value="">All statuses</option><option>Wishlist</option><option>Applied</option><option>Interview</option><option>Offer</option><option>Rejected</option><option>Withdrawn</option></select></div>
+        <div class="summary"><span id="count">Loading applications...</span><a href="/swagger" target="_blank">API docs ↗</a></div>
+        <div id="cards" class="cards"></div>
+      </section>
+    </div>
+    <dialog id="application-dialog">
+      <div class="dialog-panel">
+        <div class="dialog-heading"><h2 id="form-title">Add an application</h2><button id="close-dialog" class="close" type="button" aria-label="Close">×</button></div>
         <form id="application-form">
           <input id="application-id" type="hidden">
           <label for="company">Company</label><input id="company" required maxlength="200" placeholder="Acme Corp">
@@ -61,13 +83,8 @@
           <label for="job-url">Job URL <span style="font-weight:400;color:#8895a2">(optional)</span></label><input id="job-url" type="url" maxlength="2048" placeholder="https://..."><label for="notes">Notes</label><textarea id="notes" maxlength="5000" placeholder="Referral, next steps, salary range..."></textarea>
           <div class="actions"><button class="primary" type="submit">Save application</button><button id="cancel" class="secondary" type="button" hidden>Cancel</button></div>
         </form>
-      </section>
-      <section>
-        <div class="toolbar"><input id="company-filter" placeholder="Search by company..."><select id="status-filter"><option value="">All statuses</option><option>Wishlist</option><option>Applied</option><option>Interview</option><option>Offer</option><option>Rejected</option><option>Withdrawn</option></select></div>
-        <div class="summary"><span id="count">Loading applications...</span><a href="/swagger" target="_blank">API docs ↗</a></div>
-        <div id="cards" class="cards"></div>
-      </section>
-    </div>
+      </div>
+    </dialog>
   </main>
   <script>
     const api = '/api/JobApplications';
@@ -82,16 +99,20 @@
     function render() {
       const company = $('company-filter').value.toLowerCase(); const status = $('status-filter').value;
       const visible = applications.filter(x => (!status || x.status === status) && (!company || x.company.toLowerCase().includes(company)));
+      $('total-count').textContent = applications.length;
+      $('active-count').textContent = applications.filter(x => !['Rejected', 'Withdrawn'].includes(x.status)).length;
+      $('interview-count').textContent = applications.filter(x => x.status === 'Interview').length;
+      $('offer-count').textContent = applications.filter(x => x.status === 'Offer').length;
       $('count').textContent = `${visible.length} application${visible.length === 1 ? '' : 's'}`;
       $('cards').innerHTML = visible.length ? visible.map(x => `<article class="card"><div class="card-top"><div><div class="company">${escapeHtml(x.company)}</div><div class="title">${escapeHtml(x.jobTitle)}</div><div class="date">Applied ${escapeHtml(x.applicationDate)}</div></div><span class="badge" data-status="${escapeHtml(x.status)}">${escapeHtml(x.status)}</span></div>${x.notes ? `<div class="notes">${escapeHtml(x.notes)}</div>` : ''}<div class="card-bottom">${x.jobUrl ? `<a href="${escapeHtml(x.jobUrl)}" target="_blank" rel="noreferrer">View job posting ↗</a>` : '<span></span>'}<div><button class="danger edit" data-id="${x.id}">Edit</button><button class="danger delete" data-id="${x.id}">Delete</button></div></div></article>`).join('') : '<div class="empty">No applications match your filters.<br>Add your first application using the form.</div>';
       document.querySelectorAll('.edit').forEach(button => button.onclick = () => edit(Number(button.dataset.id)));
       document.querySelectorAll('.delete').forEach(button => button.onclick = () => remove(Number(button.dataset.id)));
     }
     function resetForm() { $('application-form').reset(); $('application-id').value = ''; $('application-date').value = new Date().toISOString().slice(0,10); $('form-title').textContent = 'Add an application'; $('cancel').hidden = true; document.querySelector('.primary').textContent = 'Save application'; }
-    function edit(id) { const x = applications.find(item => item.id === id); if (!x) return; $('application-id').value=x.id; $('company').value=x.company; $('job-title').value=x.jobTitle; $('status').value=x.status; $('application-date').value=x.applicationDate; $('job-url').value=x.jobUrl || ''; $('notes').value=x.notes || ''; $('form-title').textContent='Edit application'; $('cancel').hidden=false; document.querySelector('.primary').textContent='Update application'; window.scrollTo({top:0,behavior:'smooth'}); }
+    function edit(id) { const x = applications.find(item => item.id === id); if (!x) return; $('application-id').value=x.id; $('company').value=x.company; $('job-title').value=x.jobTitle; $('status').value=x.status; $('application-date').value=x.applicationDate; $('job-url').value=x.jobUrl || ''; $('notes').value=x.notes || ''; $('form-title').textContent='Edit application'; $('cancel').hidden=false; document.querySelector('.primary').textContent='Update application'; $('application-dialog').showModal(); }
     async function remove(id) { if (!confirm('Delete this application?')) return; const response = await fetch(`${api}/${id}`, {method:'DELETE'}); if (!response.ok) return showError('Could not delete application.'); applications = applications.filter(x => x.id !== id); render(); }
-    $('application-form').onsubmit = async event => { event.preventDefault(); showError(''); const id = $('application-id').value; const payload = {company:$('company').value, jobTitle:$('job-title').value, status:$('status').value, applicationDate:$('application-date').value, jobUrl:$('job-url').value || null, notes:$('notes').value || null}; const response = await fetch(id ? `${api}/${id}` : api, {method:id ? 'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}); if (!response.ok) { const problem=await response.json().catch(()=>null); return showError(problem?.detail || 'Please check the form and try again.'); } resetForm(); await load(); };
-    $('cancel').onclick = resetForm; $('company-filter').oninput = render; $('status-filter').onchange = render; resetForm(); load();
+    $('application-form').onsubmit = async event => { event.preventDefault(); showError(''); const id = $('application-id').value; const payload = {company:$('company').value, jobTitle:$('job-title').value, status:$('status').value, applicationDate:$('application-date').value, jobUrl:$('job-url').value || null, notes:$('notes').value || null}; const response = await fetch(id ? `${api}/${id}` : api, {method:id ? 'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)}); if (!response.ok) { const problem=await response.json().catch(()=>null); return showError(problem?.detail || 'Please check the form and try again.'); } $('application-dialog').close(); resetForm(); await load(); };
+    $('add-button').onclick = () => { resetForm(); $('application-dialog').showModal(); }; $('close-dialog').onclick = () => { $('application-dialog').close(); resetForm(); }; $('cancel').onclick = () => { $('application-dialog').close(); resetForm(); }; $('company-filter').oninput = render; $('status-filter').onchange = render; resetForm(); load();
   </script>
 </body>
 </html>
