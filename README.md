@@ -17,10 +17,10 @@ Requirements: .NET 10 SDK.
 
 ```powershell
 dotnet restore JobTracker.slnx
-dotnet run --project src/JobTracker.Api
+dotnet run --project src/JobTracker.Api --launch-profile https
 ```
 
-The API applies pending migrations at startup and stores data in `jobtracker.db` in the API working directory. In development, open `/swagger` to explore and execute requests interactively.
+The API applies pending migrations at startup and stores data in `jobtracker.db` in the API working directory. The default HTTPS profile exposes `https://localhost:7112` and `http://localhost:5133`; HTTP requests redirect to HTTPS. In development, open `/swagger` to explore and execute requests interactively.
 
 ## API examples
 
