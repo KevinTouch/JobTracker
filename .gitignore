@@ -471,6 +471,11 @@ ehthumbs_vista.db
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
+# Local SQLite database files
+*.db
+*.db-shm
+*.db-wal
+
 # Windows Installer files
 *.cab
 *.msi
