@@ -26,7 +26,10 @@
     button { border:0; border-radius:8px; cursor:pointer; padding:10px 14px; font:650 14px inherit; }
     .primary { flex:1; color:#fff; background:var(--accent); }
     .secondary { color:#425466; background:#edf2f6; }
-    .danger { color:var(--danger); background:transparent; padding:6px 0; }
+    .danger { border:1px solid #d8e0e7; color:#35516d; background:#fff; padding:6px 11px; font-size:13px; }
+    .danger:hover { background:#f1f5f8; }
+    .delete { border-color:#f0caca; color:var(--danger); }
+    .delete:hover { background:#fff1f1; }
     .toolbar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
     .toolbar input { flex:1 1 190px; }
     .toolbar select { flex:0 1 160px; }
@@ -40,7 +43,8 @@
     .badge { white-space:nowrap; border-radius:99px; padding:4px 9px; background:#e8f0ff; color:#2054ae; font-size:12px; font-weight:700; }
     .badge[data-status="Interview"] { background:#fff3db; color:#9a5c00; } .badge[data-status="Offer"] { background:#e0f7eb; color:#087443; } .badge[data-status="Rejected"], .badge[data-status="Withdrawn"] { background:#fbe7e7; color:#a13737; }
     .notes { margin:12px 0 0; color:#465463; white-space:pre-wrap; }
-    .card-bottom { display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:10px; border-top:1px solid #eef2f5; }
+    .card-bottom { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-top:12px; padding-top:10px; border-top:1px solid #eef2f5; }
+    .card-actions { display:flex; gap:8px; flex-shrink:0; }
     .card-bottom a { color:var(--accent); font-size:13px; font-weight:650; }
     .empty { padding:42px 20px; color:var(--muted); text-align:center; border:1px dashed #cbd6df; border-radius:11px; }
     .error { display:none; margin-bottom:16px; padding:11px 13px; border-radius:8px; background:#fbe7e7; color:#943737; }
@@ -104,7 +108,7 @@
       $('interview-count').textContent = applications.filter(x => x.status === 'Interview').length;
       $('offer-count').textContent = applications.filter(x => x.status === 'Offer').length;
       $('count').textContent = `${visible.length} application${visible.length === 1 ? '' : 's'}`;
-      $('cards').innerHTML = visible.length ? visible.map(x => `<article class="card"><div class="card-top"><div><div class="company">${escapeHtml(x.company)}</div><div class="title">${escapeHtml(x.jobTitle)}</div><div class="date">Applied ${escapeHtml(x.applicationDate)}</div></div><span class="badge" data-status="${escapeHtml(x.status)}">${escapeHtml(x.status)}</span></div>${x.notes ? `<div class="notes">${escapeHtml(x.notes)}</div>` : ''}<div class="card-bottom">${x.jobUrl ? `<a href="${escapeHtml(x.jobUrl)}" target="_blank" rel="noreferrer">View job posting ↗</a>` : '<span></span>'}<div><button class="danger edit" data-id="${x.id}">Edit</button><button class="danger delete" data-id="${x.id}">Delete</button></div></div></article>`).join('') : '<div class="empty">No applications match your filters.<br>Add your first application using the form.</div>';
+      $('cards').innerHTML = visible.length ? visible.map(x => `<article class="card"><div class="card-top"><div><div class="company">${escapeHtml(x.company)}</div><div class="title">${escapeHtml(x.jobTitle)}</div><div class="date">Applied ${escapeHtml(x.applicationDate)}</div></div><span class="badge" data-status="${escapeHtml(x.status)}">${escapeHtml(x.status)}</span></div>${x.notes ? `<div class="notes">${escapeHtml(x.notes)}</div>` : ''}<div class="card-bottom">${x.jobUrl ? `<a href="${escapeHtml(x.jobUrl)}" target="_blank" rel="noreferrer">View job posting ↗</a>` : '<span></span>'}<div class="card-actions"><button class="danger edit" data-id="${x.id}">Edit</button><button class="danger delete" data-id="${x.id}">Delete</button></div></div></article>`).join('') : '<div class="empty">No applications match your filters.<br>Add your first application using the form.</div>';
       document.querySelectorAll('.edit').forEach(button => button.onclick = () => edit(Number(button.dataset.id)));
       document.querySelectorAll('.delete').forEach(button => button.onclick = () => remove(Number(button.dataset.id)));
     }
